@@ -26,6 +26,24 @@
                 padding: 2em;
             }
 
+            #creationForm > div {
+                padding-bottom: 1em;
+            }
+            #creationForm > div > strong:first-child {
+                margin-right: 1em;
+            }
+
+            #creationForm textarea {
+                height:25em; 
+                width:100%;
+            }
+
+            #creationForm #generateButton {
+                padding: 1em;
+                width: 10em;
+                font-weight: bold;
+            }
+
             .page {
                 page-break-after: always;
             }
@@ -38,7 +56,7 @@
                 margin:auto;
                 left: 5vh;
                 right: 5vh;
-                border-collapse: collapse;
+                border-collapse: separate;
             }
             .page img {
                 max-width:100%;
@@ -61,17 +79,18 @@
     </head>
     <body>
         <div id="creationForm">
-        <div style="padding-bottom:1em;">
-            <strong>Title</strong>
-            <input type="text" id="bingoTitle" placeholder="Your Bingo Title">
-        </div>
-        <div>
-            <p><strong>Bingo Entries</strong></p>
-            <p>Add one item per line</p>
-            <p>Group items together with "---"</p>
-        </div>
+            <div>
+                <strong>Title: </strong>
+                <input type="text" id="bingoTitle" placeholder="Your Bingo Title" value="Bingo">
+            </div>
+            <div>
+                <strong>Bingo Entries: </strong>
+                <ul>
+                    <li>Add one item per line</li>
+                    <li>Group items together with "---"</li>
+                </ul>
 
-<textarea id="bingoLines" style="height:25em; width:50%;">
+<textarea id="bingoLines">
 Regular Option
 Another Option
 ---
@@ -82,16 +101,17 @@ Group B Option 1
 Group B Option 2
 Group B Option 3
 </textarea>
-        <div style="padding-bottom:1em;">
-            <strong>Free Space Image:</strong>
+</div>
+        <div>
+            <strong>Free Space Image: </strong>
             <input type="file" id="freeSpaceImage" accept="image/*">
             <button id="clearFreeSpaceImage" onclick="document.getElementById('freeSpaceImage').value='';">Clear</button>
         </div>
-        <div style="padding-bottom:1em;">
-            <strong>Count (1-30):</strong>
-            <input id="pageCount" type="number" min="1" max="30" value="10">
+        <div>
+            <strong>Count (1-100): </strong>
+            <input id="pageCount" type="number" min="1" max="100" value="10">
         </div>
-<button id="generate" onclick="generate()">GENERATE</button>
+<button id="generateButton" onclick="generate()">GENERATE</button>
 <p id="instructions">Click the GENERATE button to create a set of bingo cards. Click the PRINT button in your browser to print the cards.</p>
 </div>
 <div id="generatorTarget">
@@ -188,6 +208,8 @@ Group B Option 3
                     page.appendChild(table);
                     document.getElementById('generatorTarget').appendChild(page);
                 }
+
+                window.print();
 
                 
             }
