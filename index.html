@@ -44,6 +44,12 @@
                 font-weight: bold;
             }
 
+            #creationForm #stats {
+                font-size: smaller;
+                font-style: italic;
+
+            }
+
             .page {
                 page-break-after: always;
             }
@@ -87,12 +93,17 @@
                 <strong>Bingo Entries: </strong>
                 <ul>
                     <li>Add one item per line</li>
-                    <li>Group items together with "---"</li>
+                    <li>Add grouped items with "---"</li>
+                    <li>The generator will select up to ONE item per sheet from a group</li>
                 </ul>
 
-<textarea id="bingoLines">
-Regular Option
-Another Option
+<textarea id="bingoLines" onkeyup="refreshStats()">
+Option A
+Option B
+Option C
+Option D
+Option E
+Option F
 ---
 Group A Option 1
 Group A Option 2
@@ -101,9 +112,10 @@ Group B Option 1
 Group B Option 2
 Group B Option 3
 </textarea>
+<p id="stats"></p>
 </div>
         <div>
-            <strong>Free Space Image: </strong>
+            <strong>Free Square Image: </strong>
             <input type="file" id="freeSpaceImage" accept="image/*">
             <button id="clearFreeSpaceImage" onclick="document.getElementById('freeSpaceImage').value='';">Clear</button>
         </div>
@@ -118,14 +130,36 @@ Group B Option 3
 
 </div>
         <script>
+            window.onload = function() {
+                refreshStats();
+            }
+
+            function refreshStats() {
+                var lines = document.getElementById('bingoLines').value.split('\n');
+                var groupCount = 0;
+                var itemCount = 0;
+                for (var i = 0; i < lines.length; i++) {
+                    if (lines[i] === "---") {
+                        groupCount++;
+                    } else {
+                        itemCount++;
+                    }
+                }
+                document.getElementById('stats').innerText = 'Groups: ' + groupCount + ' | Items: ' + itemCount + " | Total: " + (groupCount + itemCount);
+                if ((groupCount + itemCount) < 24) {
+                    // Append a warning to the stats
+                    document.getElementById('stats').innerText += ' | (More than 24 groups + items is recommended, or you will have duplicate squares)';
+                } 
+            }
+
             function generate() {
-                // First, clear everything in the body _after_ generateFromHere
+                // First, clear the previously generated pages
                 document.getElementById('generatorTarget').innerHTML = '';
                 
-                console.log('Generating pages');
                 var lines = document.getElementById('bingoLines').value.split('\n');
                 var pageCount = document.getElementById('pageCount').value;
                 var freeSpaceImage = document.getElementById('freeSpaceImage').files[0];
+
 
                 // First process the bingo lines to split by use of "---"
                 var bingoGroups = [];
@@ -141,6 +175,26 @@ Group B Option 3
                 // Push the last group
                 bingoGroups.push(currentGroup);
 
+                // Check our total count of groups and items
+                var groupCount = 0;
+                var itemCount = 0;
+                for (var i = 0; i < lines.length; i++) {
+                    if (lines[i] === "---") {
+                        groupCount++;
+                    } else {
+                        itemCount++;
+                    }
+                }
+                if ((groupCount + itemCount) < 24) {
+                    // Duplicate all the entries of the first bingo group unti we have at least 24 items
+                    // We do this because otherwise during the generation process, squares will appear in the
+                    // same sequence after they start being duplicated
+                    while (groupCount + itemCount < 24) {
+                        bingoGroups[0].push(...bingoGroups[0]);
+                        itemCount = bingoGroups[0].length;
+                    }
+                }
+
                 // The first group represents items we can use on any Bingo square
                 // The other groups represent lines, from which we should select ONE
                 // option to fill a square
@@ -153,22 +207,22 @@ Group B Option 3
                         shuffle(bingoGroups[i]);
                     }
 
-                    // Generate a unique set of numbers up to 2/3 the size of bingoGroups.length
-                    // representing random bingoGroups to draw from
-                    var randomGroups = [];
+                    // Generate a set of numbers representing random bingoGroups to draw from
+                    var randomDraw = [];
                     for (let i = 0; i < bingoGroups.length; i++) {
                         var random = Math.floor(Math.random() * bingoGroups.length);
-                        if (randomGroups.indexOf(random) === -1) {
-                            randomGroups.push(random);
+                        // This means they may or may not appear in the final set of bingoGroups
+                        if (randomDraw.indexOf(random) === -1) {
+                            randomDraw.push(random);
                         }
                     }
-                    // Now extend the randomGroups array up to 25 elements and fill the remaining
+                    // Now extend the randomDraw array up to 25 elements and fill the remaining
                     // values with '0'
-                    while (randomGroups.length < 25) {
-                        randomGroups.push(0);
+                    while (randomDraw.length < 25) {
+                        randomDraw.push(0);
                     }
-                    // Shuffle the randomGroups array
-                    shuffle(randomGroups);
+                    // Shuffle the randomDraw array
+                    shuffle(randomDraw);
 
                     var page = document.createElement('div');
                     page.className = 'page';
@@ -193,10 +247,10 @@ Group B Option 3
                                     cell.innerHTML = '<p class="freeSpace">FREE</p>';
                                 }
                             } else {                                
-                                // Iterate to the next element of the randomGroups array
+                                // Iterate to the next element of the randomDraw array
                                 // and select the first element from that bingoGroup
                                 // moving it to the bottom of that bingoGroup
-                                var groupIndex = randomGroups[i * 5 + j];
+                                var groupIndex = randomDraw[i * 5 + j];
                                 var item = bingoGroups[groupIndex][0];
                                 bingoGroups[groupIndex].push(bingoGroups[groupIndex].shift());
                                 cell.innerText = item;
@@ -213,6 +267,7 @@ Group B Option 3
 
                 
             }
+
             // In-place shuffle the order of elements within an array
             function shuffle(array) {
                 let currentIndex = array.length;
