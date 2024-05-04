@@ -3,8 +3,64 @@
     <head>
         <meta charset=utf-8>
         <title>Quick Bingo</title>
+        <style type="text/css">
+            @media print {
+                body {
+                    margin: 0;
+                    padding: 0;
+                    font-size: 12pt;
+                }
+                #creationForm {
+                    display: none;
+                }
+                #generatorTarget {
+                    display: block;
+                }
+            }
+
+            body {
+                font-family: Arial, Helvetica, sans-serif
+            }
+
+            #creationForm {
+                padding: 2em;
+            }
+
+            .page {
+                page-break-after: always;
+            }
+            .page h1 {
+                text-align: center;
+            }
+            .page table {
+                height:80vh; 
+                width:90vw; 
+                margin:auto;
+                left: 5vh;
+                right: 5vh;
+                border-collapse: collapse;
+            }
+            .page img {
+                max-width:100%;
+                max-height:100%;
+            }
+            .page td {
+                border:1px solid black; 
+                text-align:center; 
+                vertical-align:middle; 
+                width:18vh; 
+                height:16vh;
+                padding-left: 1em;
+                padding-right: 1em;
+            }
+            .page .freeSpace {
+                font-size: 2em;
+                font-weight: bold;
+            }
+        </style>
     </head>
     <body>
+        <div id="creationForm">
         <div style="padding-bottom:1em;">
             <strong>Title</strong>
             <input type="text" id="bingoTitle" placeholder="Your Bingo Title">
@@ -36,7 +92,8 @@ Group B Option 3
             <input id="pageCount" type="number" min="1" max="30" value="10">
         </div>
 <button id="generate" onclick="generate()">GENERATE</button>
-<div style="page-break-after:always;"></div>
+<p id="instructions">Click the GENERATE button to create a set of bingo cards. Click the PRINT button in your browser to print the cards.</p>
+</div>
 <div id="generatorTarget">
 
 </div>
@@ -94,30 +151,26 @@ Group B Option 3
                     shuffle(randomGroups);
 
                     var page = document.createElement('div');
-                    page.style = 'page-break-after:always;';
+                    page.className = 'page';
                     // insert a horizontally centered h1 element saying "TUFF Bingo"
                     var h1 = document.createElement('h1');
                     h1.innerText = document.getElementById('bingoTitle').value || 'Bingo';
-                    h1.style = 'text-align:center;';
                     page.appendChild(h1);
                     var table = document.createElement('table');
                     // Set the table to be 90vh and width 90vw to ensure it fits on the print page
-                    table.style = 'height:90vh; width:90vw; margin:auto;';
                     
 
                     for (var i = 0; i < 5; i++) {
                         var row = document.createElement('tr');
                         for (var j = 0; j < 5; j++) {
                             var cell = document.createElement('td');
-                            cell.style = 'border:1px solid black; text-align:center; vertical-align:middle; width:18vh; height:18vh;';
                             if (i === 2 && j === 2) {
                                 if (freeSpaceImage) {
                                     var img = document.createElement('img');
                                     img.src = URL.createObjectURL(freeSpaceImage);
-                                    img.style = 'max-width:100%; max-height:100%;';
                                     cell.appendChild(img);
                                 } else {
-                                    cell.innerHTML = '<strong>FREE</strong>';
+                                    cell.innerHTML = '<p class="freeSpace">FREE</p>';
                                 }
                             } else {                                
                                 // Iterate to the next element of the randomGroups array
